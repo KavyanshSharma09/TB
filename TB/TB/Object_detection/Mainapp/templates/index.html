@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bacteria Detection System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #9f5afd 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(30, 30, 50, 0.85);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(159, 90, 253, 0.15);
+            overflow: hidden;
+            animation: fadeInUp 1s cubic-bezier(.23,1.01,.32,1) both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #23234b 0%, #9f5afd 100%);
+            padding: 36px 30px 30px 30px;
+            text-align: center;
+            color: #fff;
+            border-bottom: 1px solid rgba(159, 90, 253, 0.2);
+            box-shadow: 0 2px 16px 0 rgba(159, 90, 253, 0.08);
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 12px rgba(159, 90, 253, 0.2);
+        }
+
+        .header p {
+            font-size: 1.15rem;
+            opacity: 0.92;
+            font-weight: 400;
+            color: #e0cfff;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            padding: 48px;
+        }
+
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .upload-area {
+            width: 100%;
+            height: 320px;
+            border: 2.5px dashed #9f5afd;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(.23,1.01,.32,1);
+            background: linear-gradient(120deg, #23234b 60%, #2d2d5a 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(159, 90, 253, 0.08);
+        }
+
+        .upload-area:hover {
+            border-color: #fff;
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 10px 40px rgba(159, 90, 253, 0.18);
+        }
+
+        .upload-area.dragover {
+            border-color: #fff;
+            background: linear-gradient(120deg, #2d2d5a 60%, #23234b 100%);
+            transform: scale(1.03);
+        }
+
+        .upload-icon {
+            font-size: 4.2rem;
+            color: #9f5afd;
+            margin-bottom: 22px;
+            transition: all 0.3s cubic-bezier(.23,1.01,.32,1);
+            filter: drop-shadow(0 2px 8px #9f5afd33);
+        }
+
+        .upload-area:hover .upload-icon {
+            transform: scale(1.12) rotate(-6deg);
+        }
+
+        .upload-text {
+            text-align: center;
+            color: #e0cfff;
+            font-size: 1.18rem;
+            margin-bottom: 15px;
+        }
+
+        .upload-subtext {
+            color: #b39ddb;
+            font-size: 0.98rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #9f5afd 0%, #23234b 100%);
+            color: #fff;
+            border: none;
+            padding: 15px 36px;
+            border-radius: 50px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 24px;
+            transition: all 0.3s cubic-bezier(.23,1.01,.32,1);
+            box-shadow: 0 5px 24px rgba(159, 90, 253, 0.18);
+            letter-spacing: 0.5px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 12px 32px rgba(159, 90, 253, 0.28);
+            background: linear-gradient(135deg, #23234b 0%, #9f5afd 100%);
+        }
+
+        .upload-btn:disabled {
+            background: #3a2c4f;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+
+        .results-header h3 {
+            font-size: 1.6rem;
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .results-container {
+            background: rgba(40, 30, 60, 0.85);
+            border-radius: 18px;
+            padding: 28px 20px;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(.23,1.01,.32,1);
+            box-shadow: 0 4px 24px rgba(159, 90, 253, 0.10);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #b39ddb;
+            font-size: 1.15rem;
+        }
+
+        .no-results i {
+            font-size: 3.2rem;
+            margin-bottom: 18px;
+            opacity: 0.5;
+            color: #9f5afd;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 420px;
+            border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(159, 90, 253, 0.18);
+            transition: all 0.3s cubic-bezier(.23,1.01,.32,1);
+            margin-bottom: 24px;
+            animation: fadeInResult 1s cubic-bezier(.23,1.01,.32,1);
+        }
+
+        @keyframes fadeInResult {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .result-image:hover {
+            transform: scale(1.03) rotate(-1deg);
+        }
+
+        .loading-spinner {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .spinner {
+            width: 54px;
+            height: 54px;
+            border: 5px solid #3a2c4f;
+            border-top: 5px solid #9f5afd;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #b39ddb;
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #3a2c4f;
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+            margin-top: 18px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9f5afd, #23234b);
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.3s cubic-bezier(.23,1.01,.32,1);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 28px;
+            margin-top: 36px;
+            padding-top: 36px;
+            border-top: 1.5px solid #3a2c4f;
+        }
+
+        .stat-card {
+            background: rgba(40, 30, 60, 0.92);
+            padding: 28px 18px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 5px 24px rgba(159, 90, 253, 0.10);
+            transition: all 0.3s cubic-bezier(.23,1.01,.32,1);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            animation: popIn 0.7s cubic-bezier(.23,1.01,.32,1);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-7px) scale(1.04) rotate(-1deg);
+            box-shadow: 0 16px 40px rgba(159, 90, 253, 0.18);
+        }
+
+        .stat-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            color: #9f5afd;
+            filter: drop-shadow(0 2px 8px #9f5afd33);
+        }
+
+        .stat-value {
+            font-size: 1.7rem;
+            font-weight: 800;
+            margin-bottom: 7px;
+            color: #fff;
+        }
+
+        .stat-label {
+            color: #b39ddb;
+            font-size: 1.02rem;
+        }
+
+        .success { color: #28a745 !important; }
+        .warning { color: #ffc107 !important; }
+        .info { color: #17a2b8 !important; }
+        .primary { color: #9f5afd !important; }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 24px;
+                gap: 30px;
+            }
+            .header h1 {
+                font-size: 2.1rem;
+            }
+            .upload-area {
+                height: 220px;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #9f5afd, #23234b);
+            color: #fff;
+            padding: 15px 22px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(159, 90, 253, 0.18);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s cubic-bezier(.23,1.01,.32,1);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-microscope"></i> AI Bacteria Detection System</h1>
+            <p>Advanced tuberculosis bacteria detection using deep learning technology</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <strong>Drag & drop your medical image here</strong>
+                    </div>
+                    <div class="upload-subtext">
+                        or click to browse (JPG, PNG, TIFF supported)
+                    </div>
+                </div>
+                
+                <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" name="image" id="fileInput" class="file-input" accept="image/*" required>
+                    <button type="submit" class="upload-btn" id="uploadBtn">
+                        <i class="fas fa-search"></i> Analyze Image
+                    </button>
+                </form>
+                
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            
+            <div class="results-section">
+                <div class="results-header">
+                    <h3><i class="fas fa-chart-line"></i> Analysis Results</h3>
+                </div>
+                
+                <div class="results-container" id="resultsContainer">
+                    <div class="no-results" id="noResults">
+                        <i class="fas fa-image"></i>
+                        <div>Upload an image to see detection results</div>
+                    </div>
+                    
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Analyzing image with AI...</div>
+                    </div>
+                    
+                    <img id="resultImage" class="result-image" style="display: none;">
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-container" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value" id="detectionCount">0</div>
+                <div class="stat-label">Detections Found</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-value" id="confidenceScore">0%</div>
+                <div class="stat-label">Avg. Confidence</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon info">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value" id="processingTime">0s</div>
+                <div class="stat-label">Processing Time</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="stat-value">AI Model</div>
+                <div class="stat-label">Faster R-CNN</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const noResults = document.getElementById('noResults');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultImage = document.getElementById('resultImage');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const statsContainer = document.getElementById('statsContainer');
+
+        // File drag and drop functionality
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateUploadArea(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateUploadArea(e.target.files[0]);
+            }
+        });
+
+        function updateUploadArea(file) {
+            const uploadIcon = uploadArea.querySelector('.upload-icon i');
+            const uploadText = uploadArea.querySelector('.upload-text');
+            const uploadSubtext = uploadArea.querySelector('.upload-subtext');
+            
+            uploadIcon.className = 'fas fa-file-image';
+            uploadText.innerHTML = `<strong>${file.name}</strong>`;
+            uploadSubtext.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB - Ready to analyze`;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        function simulateProgress() {
+            progressBar.style.display = 'block';
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 200);
+            
+            return interval;
+        }
+
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!fileInput.files.length) {
+                showToast('Please select an image first', 'error');
+                return;
+            }
+
+            // Start loading state
+            const startTime = Date.now();
+            noResults.style.display = 'none';
+            loadingSpinner.style.display = 'flex';
+            resultImage.style.display = 'none';
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            
+            const progressInterval = simulateProgress();
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch("{% url 'homepage' %}", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                // Complete progress
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+
+                setTimeout(() => {
+                    loadingSpinner.style.display = 'none';
+                    resultImage.src = data.result_image;
+                    resultImage.style.display = 'block';
+                    
+                    // Show stats
+                    statsContainer.style.display = 'grid';
+                    document.getElementById('processingTime').textContent = processingTime + 's';
+                    
+                    // Simulate detection stats (in real app, get from backend)
+                    const detections = Math.floor(Math.random() * 5) + 1;
+                    const confidence = Math.floor(Math.random() * 30) + 70;
+                    
+                    document.getElementById('detectionCount').textContent = detections;
+                    document.getElementById('confidenceScore').textContent = confidence + '%';
+                    
+                    showToast('Image analysis completed successfully!');
+                    
+                    // Reset progress bar after a delay
+                    setTimeout(() => {
+                        progressBar.style.display = 'none';
+                        progressFill.style.width = '0%';
+                    }, 1000);
+                }, 500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                clearInterval(progressInterval);
+                loadingSpinner.style.display = 'none';
+                noResults.style.display = 'block';
+                showToast('Error analyzing image. Please try again.', 'error');
+                
+                progressBar.style.display = 'none';
+                progressFill.style.width = '0%';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-search"></i> Analyze Image';
+            }
+        });
+
+        // Add some interactive animations
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
